@@ -11,16 +11,14 @@ namespace IdSvr.Legacy
                 {
                     new Scope
                     {
-                        Name = "portal",
+                        Name = "portalprofile",
                         Type = ScopeType.Identity,
-
                         Claims = new List<ScopeClaim>
                         {
                             new ScopeClaim("age"),
                             new ScopeClaim("role"),
                             new ScopeClaim("name")
-                        },
-                        
+                        }
                     }
                 };
         }

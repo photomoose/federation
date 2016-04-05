@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Helpers;
+using IdentityModel.Client;
 using LegacyPortal;
 using Microsoft.AspNet.Identity;
 using Microsoft.IdentityModel.Protocols;
@@ -20,6 +22,9 @@ namespace LegacyPortal
     {
         public void Configuration(IAppBuilder app)
         {
+            AntiForgeryConfig.UniqueClaimTypeIdentifier = "sub";
+            JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
+
             ConfigureAuth(app);
 
             app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -33,29 +38,44 @@ namespace LegacyPortal
                 ClientId = "legacy-portal",
                 RedirectUri = "https://portal.legacy/",
                 PostLogoutRedirectUri = "https://portal.legacy/",
-                ResponseType = "id_token",
+                ResponseType = "code id_token",
                 SignInAsAuthenticationType = "Cookies",
-                Scope = "openid profile email portal",
+                Scope = "openid email portalprofile",
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
-                    SecurityTokenValidated = async n =>
+                    AuthorizationCodeReceived = async n =>
                     {
+                        // use the code to get the access and refresh token
+                        var tokenClient = new TokenClient(
+                            "https://idsvr.legacy/connect/token",
+                            "legacy-portal",
+                            "secret");
+
+                        var tokenResponse = await tokenClient.RequestAuthorizationCodeAsync(
+                                    n.Code, n.RedirectUri);
+
+                        var userInfoClient = new UserInfoClient(
+                            new Uri("https://idsvr.legacy/connect/userinfo"), 
+                            tokenResponse.AccessToken);
+
+                        var userInfo = await userInfoClient.GetAsync();
+
                         var id = n.AuthenticationTicket.Identity;
+                        var sub = id.FindFirst("sub");
+                        var sid = id.FindFirst("sid");
 
-                        var nid = new ClaimsIdentity(
-                            id.AuthenticationType,
-                            ClaimTypes.GivenName,
-                            ClaimTypes.Role);
-
-                        nid.AddClaims(id.Claims);
+                        // Create new identity with claims
+                        var nid = new ClaimsIdentity(n.AuthenticationTicket.Identity.AuthenticationType);
+                        nid.AddClaims(userInfo.GetClaimsIdentity().Claims);
                         nid.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
-                        
-                        var idProvider = id.FindFirst("http://schemas.microsoft.com/identity/claims/identityprovider");
-                        nid.AddClaim(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", idProvider.Value));
+                        nid.AddClaim(new Claim("access_token", tokenResponse.AccessToken));
+                        nid.AddClaim(sid);
 
-                        n.AuthenticationTicket = new AuthenticationTicket(
-                            nid,
-                            n.AuthenticationTicket.Properties);
+                        // NameIdentifier required for ASP.NET Identity
+                        nid.AddClaim(new Claim(ClaimTypes.NameIdentifier, sub.Value));
+
+
+                        n.AuthenticationTicket = new AuthenticationTicket(nid, n.AuthenticationTicket.Properties);
                     },
                     RedirectToIdentityProvider = n =>
                     {

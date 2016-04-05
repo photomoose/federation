@@ -4,7 +4,7 @@
 {
     <ul class="nav navbar-nav navbar-right">
         <li>
-            @Html.ActionLink("Hello " + ((ClaimsIdentity)User.Identity).FindFirstValue("preferred_username") + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
+            @Html.ActionLink("Hello " + ((ClaimsIdentity)User.Identity).FindFirstValue("email") + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
         </li>
         <li>@Html.ActionLink("Log off", "LogOff", "Account")</li>
     </ul>

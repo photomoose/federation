@@ -31,7 +31,11 @@ namespace IdSvr.Legacy
                     Enabled = true,
                     ClientName = "Legacy Portal",
                     ClientId = "legacy-portal",
-                    Flow = Flows.Implicit,
+                    ClientSecrets = new List<Secret>
+                    {
+                        new Secret("secret".Sha256())
+                    },
+                    Flow = Flows.Hybrid,
                     RedirectUris = new List<string>
                     {
                         "https://portal.legacy/"
@@ -40,7 +44,12 @@ namespace IdSvr.Legacy
                     {
                         "https://portal.legacy/"
                     },
-                    AllowAccessToAllScopes = true,
+                    AllowedScopes = new List<string>
+                    {
+                        "openid",
+                        "email",
+                        "portalprofile"
+                    },
                     RequireConsent = false,                    
                 }
             };
