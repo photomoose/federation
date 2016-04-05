@@ -11,10 +11,6 @@ namespace IdSvr.New
             {
                 new Scope
                 {
-                    Name = "api"
-                },
-                new Scope
-                {
                     Name = "portal",
                     DisplayName = "Some description about the Portal scope.",
                     Type = ScopeType.Identity,

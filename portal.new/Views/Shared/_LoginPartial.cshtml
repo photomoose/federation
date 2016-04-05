@@ -3,7 +3,7 @@
 {
     <ul class="nav navbar-nav navbar-right">
         <li>
-            @Html.ActionLink("Hello " + ((ClaimsIdentity)User.Identity).FindFirst("preferred_username").Value + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
+            @*@Html.ActionLink("Hello " + ((ClaimsIdentity)User.Identity).FindFirst("preferred_username").Value + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })*@
         </li>
         <li>@Html.ActionLink("Log off", "LogOff", "Home")</li>
     </ul>

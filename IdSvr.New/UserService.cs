@@ -24,6 +24,9 @@ namespace IdSvr.New
         public override Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             var claims = context.Subject.Claims;
+            var requestedClaimTypes = context.RequestedClaimTypes;
+
+            claims = claims.Where(c => requestedClaimTypes.Contains(c.Type));
 
             context.IssuedClaims = claims;
 

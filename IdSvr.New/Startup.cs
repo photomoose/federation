@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Collections.Generic;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using IdentityServer3.Core.Configuration;
@@ -65,7 +66,7 @@ namespace IdSvr.New
             {
                 Authority = "https://idsvr.legacy/",
                 ClientId = "new-idsvr",
-                Scope = "openid profile email portal",
+                Scope = "openid",
                 RedirectUri = "https://idsvr.new/core/",
                 PostLogoutRedirectUri = "https://idsvr.new/core/signoutcallback/",
                 ResponseType = "id_token",
@@ -78,12 +79,11 @@ namespace IdSvr.New
                     {
                         var id = n.AuthenticationTicket.Identity;
 
-                        var nid = new ClaimsIdentity(
-                            id.AuthenticationType,
-                            ClaimTypes.GivenName,
-                            ClaimTypes.Role);
+                        var nid = new ClaimsIdentity(id.AuthenticationType);
 
                         nid.AddClaims(id.Claims);
+
+                        // Add id_token to allow post logout redirect
                         nid.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
 
                         n.AuthenticationTicket = new AuthenticationTicket(

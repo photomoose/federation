@@ -11,10 +11,6 @@ namespace IdSvr.Legacy
                 {
                     new Scope
                     {
-                        Name = "api"
-                    },
-                    new Scope
-                    {
                         Name = "portal",
                         Type = ScopeType.Identity,
 

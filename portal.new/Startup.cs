@@ -30,19 +30,17 @@ namespace NewPortal
                 PostLogoutRedirectUri = "https://portal.new/",
                 ResponseType = "id_token",
                 SignInAsAuthenticationType = "Cookies",
-                Scope = "openid profile email portal",
+                Scope = "openid",
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
                     SecurityTokenValidated = async n =>
                     {
                         var id = n.AuthenticationTicket.Identity;
 
-                        var nid = new ClaimsIdentity(
-                            id.AuthenticationType,
-                            ClaimTypes.GivenName,
-                            ClaimTypes.Role);
+                        var nid = new ClaimsIdentity(id.AuthenticationType);
 
-                        nid.AddClaims(id.Claims);
+                        //nid.AddClaims(id.Claims);
+                        //nid.AddClaim(id.FindFirst("preferred_username"));
                         nid.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
                         
                         var idProvider = id.FindFirst("http://schemas.microsoft.com/identity/claims/identityprovider");
