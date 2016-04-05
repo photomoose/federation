@@ -67,14 +67,17 @@ namespace LegacyPortal
                         // Create new identity with claims
                         var nid = new ClaimsIdentity(n.AuthenticationTicket.Identity.AuthenticationType);
                         nid.AddClaims(userInfo.GetClaimsIdentity().Claims);
-                        nid.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
                         nid.AddClaim(new Claim("access_token", tokenResponse.AccessToken));
+                        nid.AddClaim(sub);
                         nid.AddClaim(sid);
 
-                        // NameIdentifier required for ASP.NET Identity
+                        // id_token is required for post logout redirect
+                        nid.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
+
+                        // NameIdentifier required for ASP.NET Identity (for Legacy Portal)
+                        // Perhaps this needs to go into client-specific claims provider?
                         nid.AddClaim(new Claim(ClaimTypes.NameIdentifier, sub.Value));
-
-
+                        
                         n.AuthenticationTicket = new AuthenticationTicket(nid, n.AuthenticationTicket.Properties);
                     },
                     RedirectToIdentityProvider = n =>

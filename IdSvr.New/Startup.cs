@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using System.Web.Helpers;
+using IdentityModel.Client;
 using IdentityServer3.Core.Configuration;
 using IdentityServer3.Core.Extensions;
 using IdentityServer3.Core.Services;
@@ -19,6 +23,9 @@ namespace IdSvr.New
     {
         public void Configuration(IAppBuilder app)
         {
+            AntiForgeryConfig.UniqueClaimTypeIdentifier = "sub";
+            JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
+
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File(@"c:\temp\idsvr.new.log")
                 .MinimumLevel.Verbose()
@@ -66,30 +73,60 @@ namespace IdSvr.New
             {
                 Authority = "https://idsvr.legacy/",
                 ClientId = "new-idsvr",
-                Scope = "openid",
+                Scope = "openid email portalprofile",
                 RedirectUri = "https://idsvr.new/core/",
                 PostLogoutRedirectUri = "https://idsvr.new/core/signoutcallback/",
-                ResponseType = "id_token",
+                ResponseType = "code id_token",
                 SignInAsAuthenticationType = signInAsType,
                 Caption = "Legacy Reports Portal",
                 AuthenticationType = "LegacyIdSvr",
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
-                    SecurityTokenValidated = async n =>
+                    AuthorizationCodeReceived = async n =>
                     {
+                        var tokenClient = new TokenClient(
+                            "https://idsvr.legacy/connect/token",
+                            "new-idsvr",
+                            "secret");
+
+                        var tokenResponse = await tokenClient.RequestAuthorizationCodeAsync(
+                                    n.Code, n.RedirectUri);
+
+                        var userInfoClient = new UserInfoClient(
+                            new Uri("https://idsvr.legacy/connect/userinfo"),
+                            tokenResponse.AccessToken);
+
+                        var userInfo = await userInfoClient.GetAsync();
+
                         var id = n.AuthenticationTicket.Identity;
+ 
+                        // Create new identity with claims
+                        var nid = new ClaimsIdentity(n.AuthenticationTicket.Identity.AuthenticationType);
+                        nid.AddClaims(userInfo.GetClaimsIdentity().Claims);
+                        nid.AddClaim(new Claim("access_token", tokenResponse.AccessToken));
 
-                        var nid = new ClaimsIdentity(id.AuthenticationType);
-
-                        nid.AddClaims(id.Claims);
-
-                        // Add id_token to allow post logout redirect
+                        // id_token is required for post logout redirect
                         nid.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
 
-                        n.AuthenticationTicket = new AuthenticationTicket(
-                            nid,
-                            n.AuthenticationTicket.Properties);
+                        n.AuthenticationTicket = new AuthenticationTicket(nid, n.AuthenticationTicket.Properties);
                     },
+                    //SecurityTokenValidated = n =>
+                    //{
+                    //    var id = n.AuthenticationTicket.Identity;
+
+                    //    var nid = new ClaimsIdentity(id.AuthenticationType);
+
+                    //    //nid.AddClaims(id.Claims);
+
+                    //    // Add id_token to allow post logout redirect
+                    //    nid.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
+
+                    //    n.AuthenticationTicket = new AuthenticationTicket(
+                    //        nid,
+                    //        n.AuthenticationTicket.Properties);
+
+                    //    return Task.FromResult(0);
+                    //},
                     RedirectToIdentityProvider = n =>
                     {
                         // if signing out, add the id_token_hint

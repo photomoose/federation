@@ -16,8 +16,7 @@ namespace IdSvr.Legacy
                         Claims = new List<ScopeClaim>
                         {
                             new ScopeClaim("age"),
-                            new ScopeClaim("role"),
-                            new ScopeClaim("name")
+                            new ScopeClaim("role")
                         }
                     }
                 };

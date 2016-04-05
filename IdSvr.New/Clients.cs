@@ -14,7 +14,11 @@ namespace IdSvr.New
                     Enabled = true,
                     ClientName = "New Portal",
                     ClientId = "new-portal",
-                    Flow = Flows.Implicit,
+                    ClientSecrets = new List<Secret>
+                    {
+                        new Secret("secret".Sha256())
+                    },
+                    Flow = Flows.Hybrid,
                     RedirectUris = new List<string>
                     {
                         "https://portal.new/"
@@ -23,7 +27,12 @@ namespace IdSvr.New
                     {
                         "https://portal.new/"
                     },
-                    AllowAccessToAllScopes = true,
+                    AllowedScopes = new List<string>
+                    {
+                        "openid",
+                        "email",
+                        "portalprofile"
+                    },
                     RequireConsent = false
                 }
             };

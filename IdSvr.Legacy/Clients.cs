@@ -14,7 +14,11 @@ namespace IdSvr.Legacy
                     Enabled = true,
                     ClientName = "New Identity Server",
                     ClientId = "new-idsvr",
-                    Flow = Flows.Implicit,
+                    ClientSecrets = new List<Secret>
+                    {
+                        new Secret("secret".Sha256())
+                    },
+                    Flow = Flows.Hybrid,
                     RedirectUris = new List<string>
                     {
                         "https://idsvr.new/core/"
@@ -23,7 +27,12 @@ namespace IdSvr.Legacy
                     {
                         "https://idsvr.new/core/signoutcallback/"
                     },
-                    AllowAccessToAllScopes = true,
+                    AllowedScopes = new List<string>
+                    {
+                        "openid",
+                        "email",
+                        "portalprofile"
+                    },
                     RequireConsent = false
                 },
                 new Client

@@ -11,14 +11,13 @@ namespace IdSvr.New
             {
                 new Scope
                 {
-                    Name = "portal",
+                    Name = "portalprofile",
                     DisplayName = "Some description about the Portal scope.",
                     Type = ScopeType.Identity,
                     Claims = new List<ScopeClaim>
                     {
                         new ScopeClaim("age"),
-                        new ScopeClaim("role"),
-                        new ScopeClaim("preferred_username")
+                        new ScopeClaim("role")
                     }
                 }
             };
