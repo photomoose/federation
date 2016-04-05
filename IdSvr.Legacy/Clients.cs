@@ -33,7 +33,8 @@ namespace IdSvr.Legacy
                         "email",
                         "portalprofile"
                     },
-                    RequireConsent = false,                    
+                    RequireConsent = false,    
+                    LogoutUri = "https://portal.legacy/home/signoutcleanup/"
                 },
                 new Client
                 {
@@ -59,7 +60,8 @@ namespace IdSvr.Legacy
                         "email",
                         "portalprofile"
                     },
-                    RequireConsent = false
+                    RequireConsent = false,
+                    LogoutUri = "https://portal.new/home/signoutcleanup/"
                 }
             };
         }

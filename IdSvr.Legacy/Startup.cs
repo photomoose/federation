@@ -48,7 +48,8 @@ namespace IdSvr.Legacy
                 AuthenticationOptions = new AuthenticationOptions
                 {
                     EnableSignOutPrompt = false,
-                    EnablePostSignOutAutoRedirect = true
+                    EnablePostSignOutAutoRedirect = true,
+                    PostSignOutAutoRedirectDelay = 1
                 }
             };
 

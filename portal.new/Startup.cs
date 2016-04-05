@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web.Helpers;
 using IdentityModel.Client;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.Owin;
@@ -18,6 +21,9 @@ namespace NewPortal
     {
         public void Configuration(IAppBuilder app)
         {
+            AntiForgeryConfig.UniqueClaimTypeIdentifier = "sub";
+            JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
+
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = "Cookies"
@@ -51,11 +57,15 @@ namespace NewPortal
                         var userInfo = await userInfoClient.GetAsync();
 
                         var id = n.AuthenticationTicket.Identity;
+                        var sub = id.FindFirst("sub");
+                        var sid = id.FindFirst("sid");
 
                         // Create new identity with claims
                         var nid = new ClaimsIdentity(n.AuthenticationTicket.Identity.AuthenticationType);
                         nid.AddClaims(userInfo.GetClaimsIdentity().Claims);
                         nid.AddClaim(new Claim("access_token", tokenResponse.AccessToken));
+                        nid.AddClaim(sub);
+                        nid.AddClaim(sid);
 
                         // id_token is required for post logout redirect
                         nid.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
