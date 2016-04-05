@@ -12,32 +12,6 @@ namespace IdSvr.Legacy
                 new Client
                 {
                     Enabled = true,
-                    ClientName = "New Identity Server",
-                    ClientId = "new-idsvr",
-                    ClientSecrets = new List<Secret>
-                    {
-                        new Secret("secret".Sha256())
-                    },
-                    Flow = Flows.Hybrid,
-                    RedirectUris = new List<string>
-                    {
-                        "https://idsvr.new/core/"
-                    },
-                    PostLogoutRedirectUris = new List<string>
-                    {
-                        "https://idsvr.new/core/signoutcallback/"
-                    },
-                    AllowedScopes = new List<string>
-                    {
-                        "openid",
-                        "email",
-                        "portalprofile"
-                    },
-                    RequireConsent = false
-                },
-                new Client
-                {
-                    Enabled = true,
                     ClientName = "Legacy Portal",
                     ClientId = "legacy-portal",
                     ClientSecrets = new List<Secret>
@@ -60,6 +34,32 @@ namespace IdSvr.Legacy
                         "portalprofile"
                     },
                     RequireConsent = false,                    
+                },
+                new Client
+                {
+                    Enabled = true,
+                    ClientName = "New Portal",
+                    ClientId = "new-portal",
+                    ClientSecrets = new List<Secret>
+                    {
+                        new Secret("secret".Sha256())
+                    },
+                    Flow = Flows.Hybrid,
+                    RedirectUris = new List<string>
+                    {
+                        "https://portal.new/"
+                    },
+                    PostLogoutRedirectUris = new List<string>
+                    {
+                        "https://portal.new/"
+                    },
+                    AllowedScopes = new List<string>
+                    {
+                        "openid",
+                        "email",
+                        "portalprofile"
+                    },
+                    RequireConsent = false
                 }
             };
         }

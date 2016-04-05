@@ -25,7 +25,7 @@ namespace NewPortal
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
             {
-                Authority = "https://idsvr.new/core/",
+                Authority = "https://idsvr.legacy/",
                 ClientId = "new-portal",
                 RedirectUri = "https://portal.new/",
                 PostLogoutRedirectUri = "https://portal.new/",
@@ -37,7 +37,7 @@ namespace NewPortal
                     AuthorizationCodeReceived = async n =>
                     {
                         var tokenClient = new TokenClient(
-                            "https://idsvr.new/core/connect/token",
+                            "https://idsvr.legacy/connect/token",
                             "new-portal",
                             "secret");
 
@@ -45,12 +45,22 @@ namespace NewPortal
                                     n.Code, n.RedirectUri);
 
                         var userInfoClient = new UserInfoClient(
-                            new Uri("https://idsvr.new/core/connect/userinfo"),
+                            new Uri("https://idsvr.legacy/connect/userinfo"),
                             tokenResponse.AccessToken);
 
                         var userInfo = await userInfoClient.GetAsync();
 
-                        // Oh dear, we have no claims because IdSvr.New has no user store!
+                        var id = n.AuthenticationTicket.Identity;
+
+                        // Create new identity with claims
+                        var nid = new ClaimsIdentity(n.AuthenticationTicket.Identity.AuthenticationType);
+                        nid.AddClaims(userInfo.GetClaimsIdentity().Claims);
+                        nid.AddClaim(new Claim("access_token", tokenResponse.AccessToken));
+
+                        // id_token is required for post logout redirect
+                        nid.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
+
+                        n.AuthenticationTicket = new AuthenticationTicket(nid, n.AuthenticationTicket.Properties);
                     },
                     //SecurityTokenValidated = n =>
                     //{
